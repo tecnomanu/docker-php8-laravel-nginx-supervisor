@@ -109,9 +109,9 @@ RUN  docker-php-ext-install \
 # fix work iconv library with alphine
 ENV LD_PRELOAD /usr/lib/preloadable_libiconv.so
 
-# Installing bash
-RUN apk add bash
-RUN sed -i 's/bin\/ash/bin\/bash/g' /etc/passwd
+# # Installing bash
+# RUN apk add bash
+# RUN sed -i 's/bin\/ash/bin\/bash/g' /etc/passwd
 
 # Installing composer
 RUN curl -sS https://getcomposer.org/installer -o composer-setup.php
