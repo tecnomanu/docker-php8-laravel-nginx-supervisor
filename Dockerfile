@@ -8,16 +8,6 @@ RUN apk add git zip unzip curl sqlite nginx supervisor
 
 RUN apk add nodejs npm
 
-# php81-cli php81-dev \
-#             php81-pgsql php81-sqlite3 php81-gd php81-imagick \
-#             php81-curl \
-#             php81-imap php81-mysql php81-mbstring \
-#             php81-xml php81-zip php81-bcmath php81-soap \
-#             php81-intl php81-readline \
-#             php81-ldap \
-#             php81-msgpack php81-igbinary php81-redis php81-swoole \
-#             php81-memcached php81-pcov php81-xdebug
-
 RUN apk add php81-gd \
             php81-imap \
             php81-redis \
@@ -72,32 +62,11 @@ RUN apk add  curl \
             freetype-dev \
             oniguruma-dev \
             unzip 
-# RUN apk add  \
-#         $PHPIZE_DEPS \
-#         bzip2-dev \
-#         ca-certificates \
-#         curl \
-#         fcgi \
-#         freetype-dev \
-#         gettext-dev \
-#         gnu-libiconv \
-#         icu-dev \
-#         imagemagick \
-#         imagemagick-dev \
-#         libjpeg-turbo-dev \
-#         libmcrypt-dev \
-#         libpng \
-#         libpng-dev \
-#         libressl-dev \
-#         libtool \
-#         libwebp-dev \
-#         libxml2-dev \
-#         libzip-dev \
-#         oniguruma-dev \
-#         unzip
+
     # pecl PHP extensions
 RUN pecl install \
         # imagick-3.4.4 \
+        mongodb \
         redis
     # Configure PHP extensions
 RUN docker-php-ext-configure \
@@ -128,6 +97,7 @@ RUN  docker-php-ext-install \
     # Enable PHP extensions
     docker-php-ext-enable \
         # imagick \
+        mongodb \
         redis \
     && \
     # Remove the build deps
@@ -135,7 +105,6 @@ RUN  docker-php-ext-install \
     && \
     # Clean out directories that don't need to be part of the image
     rm -rf /tmp/* /var/tmp/*
-
 
 # fix work iconv library with alphine
 ENV LD_PRELOAD /usr/lib/preloadable_libiconv.so
