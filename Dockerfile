@@ -129,6 +129,9 @@ COPY ./docker-compose/crontab /etc/crontabs/root
 # Config PHP
 COPY ./docker-compose/php/local.ini /usr/local/etc/php/php.ini
 
+# Install Laravel Echo Server
+RUN npm install -g laravel-echo-server
+
 # Nginx configuration
 RUN mkdir -p /run/nginx/
 RUN touch /run/nginx/nginx.pid
