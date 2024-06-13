@@ -107,6 +107,8 @@ RUN  docker-php-ext-install \
     rm -rf /tmp/* /var/tmp/*
 
 # fix work iconv library with alphine for PHP 8.1 broken
+RUN apk add patch
+
 RUN rm /usr/bin/iconv \
     && curl -SL http://ftp.gnu.org/pub/gnu/libiconv/libiconv-1.14.tar.gz | tar -xz -C . \
     && cd libiconv-1.14 \
