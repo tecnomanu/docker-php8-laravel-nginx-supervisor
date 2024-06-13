@@ -9,96 +9,96 @@ RUN apk add git zip unzip curl sqlite nginx supervisor
 RUN apk add nodejs npm
 
 RUN apk add php81-gd \
-            php81-imap \
-            php81-redis \
-            php81-cgi \
-            php81-bcmath \
-            php81-mysqli \
-            php81-zlib \
-            php81-curl \
-            php81-zip \
-            php81-mbstring \
-            php81-iconv \
-            gmp-dev
-            
+    php81-imap \
+    php81-redis \
+    php81-cgi \
+    php81-bcmath \
+    php81-mysqli \
+    php81-zlib \
+    php81-curl \
+    php81-zip \
+    php81-mbstring \
+    php81-iconv \
+    gmp-dev
+
 # dependencies required for running "phpize"
 # these get automatically installed and removed by "docker-php-ext-*" (unless they're already installed)
 ENV PHPIZE_DEPS \
-        autoconf \
-        dpkg-dev \
-        dpkg \
-        file \
-        g++ \
-        gcc \
-        libc-dev \
-        make \
-        pkgconf \
-        re2c \
-        zlib \
-        wget
+    autoconf \
+    dpkg-dev \
+    dpkg \
+    file \
+    g++ \
+    gcc \
+    libc-dev \
+    make \
+    pkgconf \
+    re2c \
+    zlib \
+    wget
 
 # Install packages
 RUN set -eux; \
     # Packages needed only for build
     apk add --virtual .build-deps \
-        $PHPIZE_DEPS
+    $PHPIZE_DEPS
 
 RUN apk add --no-cache linux-headers
 
 # Packages to install
 RUN apk add  curl \
-            freetype-dev \
-            gettext-dev \
-            libmcrypt-dev \
-            icu-dev \
-            libpng \
-            libpng-dev \
-            libressl-dev \
-            libtool \
-            libxml2-dev \
-            libzip-dev \
-            libjpeg-turbo-dev \
-            libwebp-dev \
-            freetype-dev \
-            oniguruma-dev \
-            unzip 
+    freetype-dev \
+    gettext-dev \
+    libmcrypt-dev \
+    icu-dev \
+    libpng \
+    libpng-dev \
+    libressl-dev \
+    libtool \
+    libxml2-dev \
+    libzip-dev \
+    libjpeg-turbo-dev \
+    libwebp-dev \
+    freetype-dev \
+    oniguruma-dev \
+    unzip 
 
-    # pecl PHP extensions
+# pecl PHP extensions
 RUN pecl install \
-        # imagick-3.4.4 \
-        mongodb \
-        redis
-    # Configure PHP extensions
+    # imagick-3.4.4 \
+    mongodb \
+    redis
+# Configure PHP extensions
 RUN docker-php-ext-configure \
-        # ref: https://github.com/docker-library/php/issues/920#issuecomment-562864296
-        gd --enable-gd --with-freetype --with-jpeg --with-webp
-    # Install PHP extensions
+    # ref: https://github.com/docker-library/php/issues/920#issuecomment-562864296
+    gd --enable-gd --with-freetype --with-jpeg --with-webp
+# Install PHP extensions
 RUN  docker-php-ext-install \
-        bcmath \
-        bz2 \
-        exif \
-        ftp \
-        gettext \
-        gd \
-        # iconv \
-        intl \
-        gmp \
-        mbstring \
-        opcache \
-        pdo \
-        pdo_mysql \
-        shmop \
-        sockets \
-        sysvmsg \
-        sysvsem \
-        sysvshm \
-        zip \
+    bcmath \
+    bz2 \
+    exif \
+    ftp \
+    gettext \
+    gd \
+    # iconv \
+    intl \
+    gmp \
+    mbstring \
+    opcache \
+    pdo \
+    pdo_mysql \
+    shmop \
+    sockets \
+    sysvmsg \
+    sysvsem \
+    sysvshm \
+    zip \
     && \
     # Enable PHP extensions
     docker-php-ext-enable \
-        # imagick \
-        mongodb \
-        redis \
+    # imagick \
+    mongodb \
+    redis \
     && \
     # Remove the build deps
     apk del .build-deps \
@@ -106,8 +106,20 @@ RUN  docker-php-ext-install \
     # Clean out directories that don't need to be part of the image
     rm -rf /tmp/* /var/tmp/*
 
-# fix work iconv library with alphine
-ENV LD_PRELOAD /usr/lib/preloadable_libiconv.so
+# fix work iconv library with alphine for PHP 8.1 broken
+RUN rm /usr/bin/iconv \
+    && curl -SL http://ftp.gnu.org/pub/gnu/libiconv/libiconv-1.14.tar.gz | tar -xz -C . \
+    && cd libiconv-1.14 \
+    && ./configure --prefix=/usr/local \
+    && curl -SL https://raw.githubusercontent.com/mxe/mxe/7e231efd245996b886b501dad780761205ecf376/src/libiconv-1-fixes.patch \
+    | patch -p1 -u  \
+    && make \
+    && make install \
+    && libtool --finish /usr/local/lib \
+    && cd .. \
+    && rm -rf libiconv-1.14
+
+ENV LD_PRELOAD /usr/local/lib/preloadable_libiconv.so
 
 # # Installing bash
 # RUN apk add bash
