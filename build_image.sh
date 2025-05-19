@@ -32,15 +32,35 @@ for arg in "$@"; do
     fi
 done
 
-# ========== Preguntas ==========
-printf "${CYAN}${QUESTION} ¿Incluir soporte para MySQL? (y/n): ${RESET}"
-read INCLUDE_MYSQL
-printf "${CYAN}${QUESTION} ¿Incluir soporte para PostgreSQL? (y/n): ${RESET}"
-read INCLUDE_PGSQL
-printf "${CYAN}${QUESTION} ¿Incluir soporte para MongoDB? (y/n): ${RESET}"
-read INCLUDE_MONGO
+# ========== Selector múltiple de base de datos ==========
+printf "${CYAN}${QUESTION} Selecciona las bases de datos a instalar:${RESET}\\n"
+printf "${CYAN}   1) MySQL${RESET}\\n"
+printf "${CYAN}   2) PostgreSQL${RESET}\\n"
+printf "${CYAN}   3) MongoDB${RESET}\\n"
+printf "${CYAN}   0) Ninguna${RESET}\\n"
+printf "${CYAN}Ingresa los números separados por espacio (ej: '1 3'): ${RESET}"
+read DB_SELECTION
+
+INCLUDE_MYSQL=false
+INCLUDE_PGSQL=false
+INCLUDE_MONGO=false
+
+for selection in $DB_SELECTION; do
+    case $selection in
+        1) INCLUDE_MYSQL=true ;;
+        2) INCLUDE_PGSQL=true ;;
+        3) INCLUDE_MONGO=true ;;
+        0) INCLUDE_MYSQL=false; INCLUDE_PGSQL=false; INCLUDE_MONGO=false ;;
+    esac
+done
+
+# ========== Otras opciones ==========
 printf "${CYAN}${QUESTION} ¿Incluir Laravel Echo Server? (y/n): ${RESET}"
-read INCLUDE_ECHO
+read INCLUDE_ECHO_INPUT
+INCLUDE_ECHO=false
+if [[ "$INCLUDE_ECHO_INPUT" == "y" ]]; then
+    INCLUDE_ECHO=true
+fi
 
 # ========== Flags de build ==========
 MYSQL_ARG="--build-arg INSTALL_MYSQL=false"
@@ -49,19 +69,19 @@ MONGO_ARG="--build-arg INSTALL_MONGO=false"
 ECHO_ARG="--build-arg INSTALL_ECHO=false"
 TAG_SUFFIX=""
 
-if [[ "$INCLUDE_MYSQL" == "y" ]]; then
+if [[ "$INCLUDE_MYSQL" == "true" ]]; then
     MYSQL_ARG="--build-arg INSTALL_MYSQL=true"
     TAG_SUFFIX="${TAG_SUFFIX}-mysql"
 fi
-if [[ "$INCLUDE_PGSQL" == "y" ]]; then
+if [[ "$INCLUDE_PGSQL" == "true" ]]; then
     PGSQL_ARG="--build-arg INSTALL_PGSQL=true"
     TAG_SUFFIX="${TAG_SUFFIX}-pgsql"
 fi
-if [[ "$INCLUDE_MONGO" == "y" ]]; then
+if [[ "$INCLUDE_MONGO" == "true" ]]; then
     MONGO_ARG="--build-arg INSTALL_MONGO=true"
     TAG_SUFFIX="${TAG_SUFFIX}-mongo"
 fi
-if [[ "$INCLUDE_ECHO" == "y" ]]; then
+if [[ "$INCLUDE_ECHO" == "true" ]]; then
     ECHO_ARG="--build-arg INSTALL_ECHO=true"
     TAG_SUFFIX="${TAG_SUFFIX}-echo"
 fi
